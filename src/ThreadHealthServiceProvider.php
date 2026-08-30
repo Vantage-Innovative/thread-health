@@ -27,8 +27,8 @@ class ThreadHealthServiceProvider extends ServiceProvider
         if (! $this->app->bound(Storage::class)) {
             throw new \LogicException('Thread Health requires Laravel Pulse and its Storage contract.');
         }
-        if (config('pulse.ingest.driver', 'database') !== 'database') {
-            throw new \LogicException('Thread Health supports only Pulse direct database ingest; Redis ingest is not quantitative-safe.');
+        if (config('pulse.ingest.driver') !== 'storage') {
+            throw new \LogicException('Thread Health supports only Pulse storage ingest (direct database writes); Redis ingest is not quantitative-safe.');
         }
 
         Pulse::register([ThreadTelemetryRecorder::class => true]);

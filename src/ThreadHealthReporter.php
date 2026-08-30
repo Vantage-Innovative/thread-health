@@ -31,8 +31,8 @@ class ThreadHealthReporter
         if (! is_int($minutes) || $minutes < 1) {
             throw new \LogicException('Thread Health cadence_minutes must be a positive integer.');
         }
-        if (config('pulse.ingest.driver', 'database') !== 'database') {
-            throw new \LogicException('Thread Health supports only Pulse direct database ingest; Redis ingest is not quantitative-safe.');
+        if (config('pulse.ingest.driver') !== 'storage') {
+            throw new \LogicException('Thread Health supports only Pulse storage ingest (direct database writes); Redis ingest is not quantitative-safe.');
         }
 
         if (! $this->app->bound(Storage::class)) {

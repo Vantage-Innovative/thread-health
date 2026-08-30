@@ -38,4 +38,4 @@ The reporter has no retry/outbox fallback. A failed HTTP request fails the comma
 - `technical.jobs.slow`
 - `technical.queries.slow`
 
-All metrics are unsampled counts. Slow thresholds default to 1,000 ms. The package uses Pulse’s public `Storage` aggregate contract and owns its own metric types; it does not read Pulse dashboard tables or built-in recorder shapes. Redis ingest is deliberately unsupported because delayed stream processing would make the reporting window unreliable.
+All metrics are unsampled counts. Slow thresholds default to 1,000 ms. The package uses Pulse’s public `Storage` aggregate contract and owns its own metric types; it does not read Pulse dashboard tables or built-in recorder shapes. It requires Pulse's `storage` ingest driver, which writes directly to Pulse's configured database storage; leave `PULSE_INGEST_DRIVER` unset (its default is `storage`) or set it to `storage`. Redis ingest is deliberately unsupported because delayed stream processing would make the reporting window unreliable.
