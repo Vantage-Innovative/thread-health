@@ -20,6 +20,10 @@ class ThreadHealthServiceProvider extends ServiceProvider
     {
         $this->publishes([__DIR__.'/../config/thread-health.php' => config_path('thread-health.php')], 'thread-health-config');
 
+        if (! config('thread-health.enabled')) {
+            return;
+        }
+
         if (! $this->app->bound(Storage::class)) {
             throw new \LogicException('Thread Health requires Laravel Pulse and its Storage contract.');
         }

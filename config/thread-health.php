@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Enable only production telemetry unless an environment explicitly opts in.
+    'enabled' => env('THREAD_HEALTH_ENABLED', env('APP_ENV') === 'production'),
+
     'endpoint' => env('THREAD_HEALTH_ENDPOINT'),
     'token' => env('THREAD_HEALTH_TOKEN'),
     'environment' => env('THREAD_HEALTH_ENVIRONMENT', env('APP_ENV', 'production')),

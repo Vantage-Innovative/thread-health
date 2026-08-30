@@ -4,6 +4,7 @@ namespace Vantage\ThreadHealth;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Laravel\Pulse\Contracts\Storage;
 
@@ -15,10 +16,14 @@ class ThreadHealthReporter
         'technical.requests.slow', 'technical.jobs.slow', 'technical.queries.slow',
     ];
 
-    public function __construct(private Storage $storage, private HttpFactory $http) {}
+    public function __construct(private Container $app, private HttpFactory $http) {}
 
     public function report(): int
     {
+        if (! config('thread-health.enabled')) {
+            throw new \LogicException('Thread Health is disabled. Set THREAD_HEALTH_ENABLED=true to report telemetry.');
+        }
+
         $endpoint = $this->requiredString('endpoint');
         $token = $this->requiredString('token');
         $environment = $this->requiredString('environment');
@@ -30,12 +35,19 @@ class ThreadHealthReporter
             throw new \LogicException('Thread Health supports only Pulse direct database ingest; Redis ingest is not quantitative-safe.');
         }
 
+        if (! $this->app->bound(Storage::class)) {
+            throw new \LogicException('Thread Health requires Laravel Pulse and its Storage contract.');
+        }
+
+        /** @var Storage $storage */
+        $storage = $this->app->make(Storage::class);
+
         $periodEnd = CarbonImmutable::now('UTC');
         $periodStart = $periodEnd->subMinutes($minutes);
         $interval = CarbonInterval::minutes($minutes);
         $metrics = [];
         foreach (self::METRICS as $metric) {
-            $metrics[$metric] = (int) round((float) $this->storage->aggregateTotal($metric, 'count', $interval));
+            $metrics[$metric] = (int) round((float) $storage->aggregateTotal($metric, 'count', $interval));
         }
 
         $this->http->acceptJson()

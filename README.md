@@ -10,6 +10,8 @@ php artisan vendor:publish --tag=thread-health-config
 
 Configure `THREAD_HEALTH_ENDPOINT`, `THREAD_HEALTH_TOKEN`, `THREAD_HEALTH_ENVIRONMENT`, and optionally the cadence/slow thresholds. The token is created in the application’s Thread project settings and is displayed once.
 
+Telemetry is enabled by default only when `APP_ENV=production`. Local, test, and staging environments do not register the Pulse recorder, validate Pulse ingest, or expose the reporting command unless explicitly enabled. Set `THREAD_HEALTH_ENABLED=true` in a non-production environment only when it should report telemetry. Calling `ThreadHealth::report()` while disabled fails explicitly.
+
 Schedule the reporter every fifteen minutes (or your configured cadence):
 
 ```php
