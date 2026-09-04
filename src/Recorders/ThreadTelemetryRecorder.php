@@ -23,7 +23,13 @@ class ThreadTelemetryRecorder
 
     public function register(callable $record, Application $app): void
     {
-        $app->afterResolving(Kernel::class, fn (Kernel $kernel) => $kernel->whenRequestLifecycleIsLongerThan(-1, $record));
+        $registerRequestLifecycleHandler = fn (Kernel $kernel) => $kernel->whenRequestLifecycleIsLongerThan(-1, $record);
+
+        $app->afterResolving(Kernel::class, $registerRequestLifecycleHandler);
+        if ($app->resolved(Kernel::class)) {
+            $registerRequestLifecycleHandler($app->make(Kernel::class));
+        }
+
         $app->afterResolving(ExceptionHandler::class, fn (ExceptionHandler $handler) => $handler->reportable(fn (Throwable $exception) => $this->recordException($exception)));
     }
 

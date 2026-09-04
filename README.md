@@ -2,9 +2,13 @@
 
 `vantage/thread-health` records a small, owned set of aggregate technical-health measurements through Laravel Pulse and sends them to Thread.
 
-Install Laravel Pulse and this package, then publish the package configuration:
+Register the GitHub repository, install Laravel Pulse and this package, then publish the package configuration:
 
 ```bash
+composer config repositories.vantage-thread-health vcs https://github.com/Vantage-Innovative/thread-health.git
+composer require laravel/pulse vantage/thread-health:^0.1
+php artisan vendor:publish --provider="Laravel\Pulse\PulseServiceProvider"
+php artisan migrate
 php artisan vendor:publish --tag=thread-health-config
 ```
 
@@ -12,10 +16,15 @@ Configure `THREAD_HEALTH_ENDPOINT`, `THREAD_HEALTH_TOKEN`, `THREAD_HEALTH_ENVIRO
 
 Telemetry is enabled by default only when `APP_ENV=production`. Local, test, and staging environments do not register the Pulse recorder, validate Pulse ingest, or expose the reporting command unless explicitly enabled. Set `THREAD_HEALTH_ENABLED=true` in a non-production environment only when it should report telemetry. Calling `ThreadHealth::report()` while disabled fails explicitly.
 
-Schedule the reporter every fifteen minutes (or your configured cadence):
+Schedule the reporter every fifteen minutes (or your configured cadence), but only when telemetry is enabled:
 
 ```php
-Schedule::command('thread-health:report')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
+if (config('thread-health.enabled')) {
+    Schedule::command('thread-health:report')
+        ->everyFifteenMinutes()
+        ->withoutOverlapping()
+        ->onOneServer();
+}
 ```
 
 You may invoke the reporter directly when needed:
